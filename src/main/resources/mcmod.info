@@ -1,0 +1,16 @@
+[
+{
+  "modid": "reactorbuilder",
+  "name": "Reactor Builder",
+  "description": "Builds NuclearCraft reactors",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["SonarSonic"],
+  "credits": "SonarSonic",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
