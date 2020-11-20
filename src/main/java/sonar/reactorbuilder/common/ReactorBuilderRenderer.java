@@ -13,6 +13,7 @@ public class ReactorBuilderRenderer extends TileEntitySpecialRenderer<ReactorBui
 
     public static AxisAlignedBB FULL_BLOCK = new AxisAlignedBB(0, 0, 0, 1, 1, 1);
 
+    @Override
     public void render(ReactorBuilderTileEntity te, double x, double y, double z, float partialTicks, int destroyStage, float alpha){
         if(te == null){
             return;
@@ -91,5 +92,8 @@ public class ReactorBuilderRenderer extends TileEntitySpecialRenderer<ReactorBui
 
     }
 
-
+    @Override
+    public boolean isGlobalRenderer(ReactorBuilderTileEntity te){
+        return true;
+    }
 }

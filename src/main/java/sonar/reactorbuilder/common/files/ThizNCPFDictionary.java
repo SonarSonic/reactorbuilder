@@ -9,9 +9,6 @@ public class ThizNCPFDictionary extends AbstractFileDictionary {
         //universal
         add("Fuel Cell", "fuel_cell");
 
-
-
-
         //// UNDERHAUL \\\\
 
         //coolers

@@ -2,11 +2,12 @@ package sonar.reactorbuilder;
 
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.apache.logging.log4j.Logger;
+import sonar.reactorbuilder.network.templates.TemplateManager;
+import sonar.reactorbuilder.network.templates.TemplateServerData;
 import sonar.reactorbuilder.proxy.CommonProxy;
 
 @Mod(modid = ReactorBuilder.MODID, name = ReactorBuilder.NAME, version = ReactorBuilder.VERSION, useMetadata = true)
@@ -14,9 +15,9 @@ public class ReactorBuilder
 {
     public static final String MODID = "reactorbuilder";
     public static final String NAME = "Reactor Builder";
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.0.2";
 
-    @SidedProxy(clientSide = "sonar.reactorbuilder.proxy.ClientProxy", serverSide = "sonar.reactorbuilder.proxy.ServerProxy")
+    @SidedProxy(clientSide = "sonar.reactorbuilder.proxy.ClientProxy", serverSide = "sonar.reactorbuilder.proxy.CommonProxy")
     public static CommonProxy proxy;
 
     @Mod.Instance
@@ -42,6 +43,14 @@ public class ReactorBuilder
 
     @Mod.EventHandler
     public void serverLoad(FMLServerStartingEvent event) {}
+
+    @Mod.EventHandler
+    public void onServerStopped(FMLServerStoppedEvent event) {
+        TemplateServerData.release();
+        TemplateManager.getTemplateManager(false).clear();
+        TemplateManager.getTemplateManager(true).clear();
+    }
+
 
     public static boolean isOverhaul(){
         return proxy.isOverhaul;

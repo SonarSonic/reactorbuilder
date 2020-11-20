@@ -6,8 +6,6 @@ import java.io.File;
 
 public abstract class AbstractFileReader {
 
-    public abstract boolean canReadFile(File file, String extension);
-
     public abstract AbstractTemplate readTemplate(File file);
 
 }

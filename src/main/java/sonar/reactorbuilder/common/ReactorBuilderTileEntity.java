@@ -34,6 +34,9 @@ import sonar.reactorbuilder.common.reactors.templates.UnderhaulSFRTemplate;
 import sonar.reactorbuilder.network.EnumSyncPacket;
 import sonar.reactorbuilder.network.PacketHandler;
 import sonar.reactorbuilder.network.PacketTileSync;
+import sonar.reactorbuilder.network.templates.TemplateManager;
+import sonar.reactorbuilder.network.templates.TemplateServerData;
+import sonar.reactorbuilder.registry.RBConfig;
 import sonar.reactorbuilder.util.EnergyStorageSyncable;
 
 import javax.annotation.Nonnull;
@@ -42,12 +45,9 @@ import javax.annotation.Nullable;
 //TODO MORE INTELLIGENT DESTROY PASS + MORE INTELLIGENT BLOCK DETECTION. i.e. ignoring blocks added after building...
 public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
 
-    public static final int ENERGY_PER_BLOCK = 50;
-    public static final int TICKS_PER_BLOCK = 5; //TODO MAKE CONFIGURABLE
-
     ///saved values
-    public EnergyStorageSyncable energyStorage = new EnergyStorageSyncable(50000, 640);
-    public AbstractTemplate template = null;
+    public EnergyStorageSyncable energyStorage = new EnergyStorageSyncable(RBConfig.energyCapacityDefault, RBConfig.energyTransferDefault);
+    public int templateID  = -1;
 
     //process - saved
     public boolean isBuilding = false;
@@ -64,20 +64,23 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
     public BlockPos errorPosition = null;
 
     ///local values - not saved
-    private int loopTick;
+    private float loopTick;
     private BlockPos startPos = null;
 
     ///client values - not saved
-    public AbstractTemplate importedTemplate = null;
+    //public AbstractTemplate importedTemplate = null;
     public int page;
     public float scroll;
 
     @Override
     public void update() {
+        if(template == null && templateID != -1){
+            initTemplate();
+            return;
+        }
         if(world.isRemote){
             return;
         }
-
         if(template == null){
             //sanity check - needed if people uninstall NC while a builder was building
             if(isDestroying || isBuilding){
@@ -145,6 +148,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
     public void pauseWithError(BlockPos errorPosition, String error){
         this.errorPosition = errorPosition;
         this.isBuilding = false;
+        this.isDestroying = false;
         this.error = error;
 
         //so the reactor builder renderer knows the error position
@@ -176,16 +180,21 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
 
     //// BUILDING LOOP \\\\
 
-    public int getTicksPerPlacement(){
-        return TICKS_PER_BLOCK;
+    public float getBlocksPerTick(){
+        return RBConfig.blocksPerTickDefault;
     }
 
     public void build(){
-        if(loopTick < getTicksPerPlacement()){
-            loopTick++;
-        }else{
-            loopTick = 0;
-            placeComponent();
+        loopTick += getBlocksPerTick();
+        int place = (int)Math.floor(loopTick);
+        if(place >= 1){
+            loopTick-=place;
+            for(int i = 0; i < place; i ++){
+                placeComponent();
+                if(!isBuilding){ //breaks the loop after errors or if the build is finished
+                    return;
+                }
+            }
         }
     }
 
@@ -227,7 +236,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
             }
 
             if(shouldUseEnergy()){
-                energyStorage.extractEnergy(ENERGY_PER_BLOCK, false);
+                energyStorage.extractEnergy(getEnergyPerBlock(), false);
             }
 
             ///set component blockstate
@@ -273,16 +282,17 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
 
     //// DESTROYING LOOP \\\\
 
-    public int getTicksPerDestroy(){
-        return 3;
-    }
-
     public void destroy(){
-        if(loopTick < getTicksPerDestroy()){
-            loopTick++;
-        }else{
-            loopTick = 0;
-            destroyComponent();
+        loopTick += getBlocksPerTick();
+        int place = (int)Math.floor(loopTick);
+        if(place >= 1){
+            loopTick-=place;
+            for(int i = 0; i < place; i ++){
+                destroyComponent();
+                if(!isDestroying){ //breaks the loop after errors or if the build is finished
+                    return;
+                }
+            }
         }
     }
 
@@ -324,7 +334,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
             }
 
             if(shouldUseEnergy()){
-                energyStorage.extractEnergy(ENERGY_PER_BLOCK, false);
+                energyStorage.extractEnergy(getEnergyPerBlock(), false);
             }
 
             ///set component blockstate
@@ -436,17 +446,18 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
 
     //// POSITIONS \\\\
 
-    public boolean isMatchingComponentAtPos(DictionaryEntry info, BlockPos pos){
-        IBlockState state = world.getBlockState(pos);
-        IBlockState place = info == null ? null : info.getBlockState();
-        if(place != null && state.getBlock() == place.getBlock() && state.getBlock().getMetaFromState(state) == place.getBlock().getMetaFromState(place)){
-            return true;
+    public boolean canPlaceComponentAtPos(@Nullable DictionaryEntry component, BlockPos pos){
+        if(component != null){
+            return component.canPlaceComponentAtPos(world, pos);
         }
-        return false;
+        return world.isAirBlock(pos) || world.getBlockState(pos).getBlock() instanceof BlockLiquid || world.getBlockState(pos).getBlock() instanceof IFluidBlock;
     }
 
-    public boolean canPlaceComponentAtPos(DictionaryEntry info, BlockPos pos){
-        return world.isAirBlock(pos) || world.getBlockState(pos).getBlock() instanceof BlockLiquid || world.getBlockState(pos).getBlock() instanceof IFluidBlock;
+    public boolean isMatchingComponentAtPos(@Nullable DictionaryEntry component, BlockPos pos){
+        if(component != null){
+            return component.isMatchingComponentAtPos(world, pos);
+        }
+        return world.isAirBlock(pos);
     }
 
     public BlockPos getStartPos(){
@@ -511,8 +522,12 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
         return true;
     }
 
+    public int getEnergyPerBlock(){
+        return RBConfig.energyPerBlockDefault;
+    }
+
     public boolean hasRequiredEnergy(){
-        return energyStorage.getEnergyStored() >= ENERGY_PER_BLOCK;
+        return energyStorage.getEnergyStored() >= getEnergyPerBlock();
     }
 
     @Override
@@ -536,19 +551,41 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
 
     //// TEMPLATES \\\\
 
-    public void changeTemplate(@Nullable AbstractTemplate template){
-        this.template = template;
+    public AbstractTemplate template = null;
 
-        if(!this.world.isRemote){
-            sendPacketToNearby(EnumSyncPacket.SYNC_TEMPLATE, 32);
-            markDirty();
+    public void initTemplate(){
+        template = TemplateManager.getTemplateManager(world.isRemote).getTemplate(templateID);
+        if(!world.isRemote && template == null){
+            templateID = -1;
         }
-
         if(template != null){
-            startPos = null;
             template.updateAdditionalInfo();
             template.sortAdditionalInfo();
         }
+    }
+
+    public void changeTemplate(int templateID){
+        if(this.templateID == templateID){
+            return;
+        }
+        removeTemplateData();
+        this.templateID = templateID;
+
+        if(!this.world.isRemote){
+            sendPacketToNearby(EnumSyncPacket.SYNC_TEMPLATE, 32);
+            markDirty(); //saving isn't automated as it might be in SonarCore.
+        }
+
+        initTemplate();
+    }
+
+    public void removeTemplateData(){ //removes the relevant
+        if(world.isRemote){
+            return;
+        }
+        //REMOVE THE OLD TEMPLATE FROM DATA.
+        TemplateServerData.get().templates.remove(templateID);
+        TemplateServerData.get().markDirty();
     }
 
 
@@ -573,7 +610,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
             errorPosition = null;
         }
 
-        template = AbstractTemplate.readTemplateFromNBT(compound);
+        templateID = compound.getInteger("templateID");
     }
 
     @Override
@@ -592,9 +629,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
         if(errorPosition != null){
             compound.setLong("errorPos", errorPosition.toLong());
         }
-
-        AbstractTemplate.writeTemplateToNBT(compound, template);
-
+        compound.setInteger("templateID", templateID);
         return compound;
     }
 
@@ -643,11 +678,11 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
                 break;
             }
             case SYNC_TEMPLATE:{
-                AbstractTemplate.writeTemplateToByteBuf(buf, template);
-                break;
-            }
-            case UPLOAD_TEMPLATE:{
-                AbstractTemplate.writeTemplateToByteBuf(buf, importedTemplate);
+                buf.writeInt(templateID);
+                buf.writeBoolean(template != null);
+                if(template != null){
+                    template.writeHeaderToBuf(buf);
+                }
                 break;
             }
             case TOGGLE_BUILDING:{
@@ -693,9 +728,14 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
                 }
                 break;
             }
-            case SYNC_TEMPLATE:
-            case UPLOAD_TEMPLATE: {
-                changeTemplate(AbstractTemplate.readTemplateFromByteBuf(buf));
+            case SYNC_TEMPLATE: {
+                templateID = buf.readInt();
+                initTemplate();
+                if(buf.readBoolean() && template !=null){
+                    template.readHeaderFromBuf(buf);
+                    template.updateAdditionalInfo();
+                    template.sortAdditionalInfo();
+                }
                 break;
             }
             case TOGGLE_BUILDING:{
@@ -715,6 +755,9 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
                 }
                 template.updateAdditionalInfo();
                 template.sortAdditionalInfo();
+
+                ///TEMPLATE SETTINGS ALTERED!!
+                TemplateServerData.get().markDirty();
                 break;
             }
         }
@@ -759,13 +802,8 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
         }
 
         @Override
-        public int getTicksPerPlacement() {
-            return 0;
-        }
-
-        @Override
-        public int getTicksPerDestroy() {
-            return 0;
+        public float getBlocksPerTick() {
+            return RBConfig.blocksPerTickCreative;
         }
     }
 

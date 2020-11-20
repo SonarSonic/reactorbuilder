@@ -16,6 +16,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
@@ -27,8 +29,10 @@ import sonar.reactorbuilder.common.ReactorBuilderTileEntity;
 import sonar.reactorbuilder.common.dictionary.GlobalDictionary;
 import sonar.reactorbuilder.network.PacketHandler;
 import sonar.reactorbuilder.network.PacketSyncDictionary;
+import sonar.reactorbuilder.network.templates.TemplateManager;
 import sonar.reactorbuilder.registry.RBBlocks;
 import sonar.reactorbuilder.registry.RBTab;
+import sonar.reactorbuilder.registry.RBConfig;
 
 @Mod.EventBusSubscriber
 public class CommonProxy {
@@ -40,6 +44,9 @@ public class CommonProxy {
         ///register packets
         ReactorBuilder.logger.info("Registering packets");
         PacketHandler.registerMessages("reactorbuilder");
+
+        ReactorBuilder.logger.info("Loading config");
+        RBConfig.init(e.getModConfigurationDirectory());
     }
 
     public void init(FMLInitializationEvent e) {
@@ -105,6 +112,28 @@ public class CommonProxy {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         ReactorBuilder.logger.info("Sending Reactor Dictionary to player: {}", event.player.getGameProfile().getName());
         PacketHandler.INSTANCE.sendTo(new PacketSyncDictionary(), (EntityPlayerMP) event.player);
+    }
+
+    @SubscribeEvent
+    public static void clientDisconnection(FMLNetworkEvent.ClientDisconnectionFromServerEvent event){
+        TemplateManager.getTemplateManager(true).clear();
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(final TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            return;
+        }
+        TemplateManager.getDownloadHandler(true).tick();
+    }
+
+
+    @SubscribeEvent
+    public static void onServerTick(final TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            return;
+        }
+        TemplateManager.getDownloadHandler(false).tick();
     }
 
     public EntityPlayer getPlayer(MessageContext ctx) {

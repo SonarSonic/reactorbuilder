@@ -9,6 +9,7 @@ import sonar.reactorbuilder.common.dictionary.DictionaryEntry;
 import sonar.reactorbuilder.common.dictionary.DictionaryEntryType;
 import sonar.reactorbuilder.common.dictionary.GlobalDictionary;
 import sonar.reactorbuilder.common.reactors.TemplateType;
+import sonar.reactorbuilder.util.Translate;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -111,7 +112,7 @@ public class OverhaulTurbine extends AbstractTemplate {
 
     @Override
     public String[] getBuildPassNames() {
-        return new String[]{"Placing Coils", "Placing Shafts", "Placing Blades", "Placing Casing"};
+        return new String[]{Translate.PASS_PLACING_COILS.t(), Translate.PASS_PLACING_SHAFTS.t(), Translate.PASS_PLACING_BLADES.t(), Translate.PASS_PLACING_CASINGS.t()};
     }
 
     @Override
@@ -222,38 +223,38 @@ public class OverhaulTurbine extends AbstractTemplate {
 
     @Override
     public void getStats(Map<String, String> statsMap) {
-        statsMap.put("File Name", fileName);
-        statsMap.put("Reactor Type", getTemplateType().fileType);
-        statsMap.put("Dimensions", xSize + " x " + ySize + " x "  + zSize);
+        statsMap.put(Translate.TEMPLATE_FILE_NAME.t(), fileName);
+        statsMap.put(Translate.TEMPLATE_REACTOR_TYPE.t(), getTemplateType().fileType);
+        statsMap.put(Translate.TEMPLATE_DIMENSIONS.t(), xSize + " x " + ySize + " x "  + zSize);
 
-        statsMap.put("Components", String.valueOf(totalSolidComponents));
-        statsMap.put("Casing", String.valueOf(totalSolidCasing + totalGlassCasing));
+        statsMap.put(Translate.TEMPLATE_COMPONENTS.t(), String.valueOf(totalSolidComponents));
+        statsMap.put(Translate.TEMPLATE_CASING.t(), String.valueOf(totalSolidCasing + totalGlassCasing));
     }
 
 
     //// SAVING & LOADING \\\\
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound compound, boolean array) {
+        super.readFromNBT(compound, array);
         bearingDiameter = compound.getInteger("diameter");
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
+    public void writeToNBT(NBTTagCompound compound, boolean array) {
+        super.writeToNBT(compound, array);
         compound.setInteger("diameter", bearingDiameter);
     }
 
     @Override
-    public void readFromBuf(ByteBuf buf) {
-        super.readFromBuf(buf);
+    public void readHeaderFromBuf(ByteBuf buf) {
+        super.readHeaderFromBuf(buf);
         bearingDiameter = buf.readInt();
     }
 
     @Override
-    public void writeToBuf(ByteBuf buf) {
-        super.writeToBuf(buf);
+    public void writeHeaderToBuf(ByteBuf buf) {
+        super.writeHeaderToBuf(buf);
         buf.writeInt(bearingDiameter);
     }
 

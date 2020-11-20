@@ -43,15 +43,23 @@ public class GlobalDictionary {
     }
 
     public static void addDictionaryItemEntry(DictionaryEntryType type, String globalName, String modid, String name, int meta){
+        addDictionaryItemEntry(type, globalName, modid, name, meta, false);
+    }
+
+    public static void addDictionaryItemEntry(DictionaryEntryType type, String globalName, String modid, String name, int meta, boolean ignoreMeta){
         Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(modid, name));
 
         if(item == null){
             ReactorBuilder.logger.error("Dictionary Error: Missing {} {}, Item: {}:{}:{}", type, globalName, modid, name, meta);
             return;
         }
-
-        GLOBAL_DICTIONARY.put(globalName, new DictionaryEntry.ItemEntry(globalID++, globalName, type, Lists.newArrayList(new ItemStack(item, 1, meta))));
+        DictionaryEntry entry = new DictionaryEntry.ItemEntry(globalID++, globalName, type, Lists.newArrayList(new ItemStack(item, 1, meta)));
+        GLOBAL_DICTIONARY.put(globalName, entry);
         componentTallies[type.ordinal()]++;
+
+        if(ignoreMeta){
+            entry.ignoreMeta();
+        }
     }
 
     public static void addDictionaryFluidEntry(DictionaryEntryType type, String globalName, String fluidName){

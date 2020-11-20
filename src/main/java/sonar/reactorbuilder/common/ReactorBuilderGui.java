@@ -11,14 +11,19 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 import sonar.reactorbuilder.ReactorBuilder;
-import sonar.reactorbuilder.common.files.AbstractFileReader;
-import sonar.reactorbuilder.common.files.FileUtils;
 import sonar.reactorbuilder.client.gui.GuiIconButton;
 import sonar.reactorbuilder.client.gui.GuiScroller;
+import sonar.reactorbuilder.common.files.HellrageJSONReader;
+import sonar.reactorbuilder.common.files.ThizNCPFReader;
 import sonar.reactorbuilder.common.reactors.templates.AbstractTemplate;
 import sonar.reactorbuilder.network.EnumSyncPacket;
 import sonar.reactorbuilder.network.PacketHandler;
 import sonar.reactorbuilder.network.PacketTileSync;
+import sonar.reactorbuilder.network.templates.DownloadHandler;
+import sonar.reactorbuilder.network.templates.TemplateManager;
+import sonar.reactorbuilder.registry.RBConfig;
+import sonar.reactorbuilder.util.Translate;
+import sonar.reactorbuilder.util.Util;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -56,13 +61,13 @@ public class ReactorBuilderGui extends GuiContainer {
     @Override
     public void initGui() {
         super.initGui();
-        buttonList.add(new GuiIconButton(this, 0, guiLeft + 7, guiTop + 89, 72, 0, 18, 18, "Paste file"));
+        buttonList.add(new GuiIconButton(this, 0, guiLeft + 7, guiTop + 89, 72, 0, 18, 18, Translate.PASTE_FILE.t()));
         //buttonList.add(new GuiIconButton(this, 1, guiLeft + 25, guiTop + 89, 90, 0, 18, 18, "Export file"));
-        buttonList.add(new GuiIconButton(this, 2, guiLeft + 133, guiTop + 89, 108, 0, 18, 18, "Build reactor"));
-        buttonList.add(new GuiIconButton(this, 3, guiLeft + 151, guiTop + 89, 126, 0, 18, 18, "Destroy reactor"));
+        buttonList.add(new GuiIconButton(this, 2, guiLeft + 133, guiTop + 89, 108, 0, 18, 18, Translate.BUILD_REACTOR.t()));
+        buttonList.add(new GuiIconButton(this, 3, guiLeft + 151, guiTop + 89, 126, 0, 18, 18, Translate.DESTROY_REACTOR.t()));
 
-        buttonList.add(new GuiIconButton(this, 4, guiLeft - 6, guiTop + 40, 180, 0, 5, 8, "Previous Page"));
-        buttonList.add(new GuiIconButton(this, 5, guiLeft + WIDTH + 6 - 5, guiTop + 40, 198, 0, 5, 8, "Next Page"));
+        buttonList.add(new GuiIconButton(this, 4, guiLeft - 6, guiTop + 40, 180, 0, 5, 8, Translate.PREV_PAGE.t()));
+        buttonList.add(new GuiIconButton(this, 5, guiLeft + WIDTH + 6 - 5, guiTop + 40, 198, 0, 5, 8, Translate.NEXT_PAGE.t()));
 
         scroller = new GuiScroller(this.guiLeft + 8 + 161 - 4, this.guiTop + 8, 75, 4);
 
@@ -183,29 +188,44 @@ public class ReactorBuilderGui extends GuiContainer {
                 Object obj = transferable.getTransferData(DataFlavor.javaFileListFlavor);
                 if(obj instanceof List && !((List<?>) obj).isEmpty() && ((List<?>) obj).get(0) instanceof File) {
                     File file = (File)((List<?>)obj).get(0);
-                    String extension = FileUtils.getFileExtension(file);
+                    String extension = Util.getFileExtension(file);
                     if(!extension.isEmpty()){
-                        AbstractFileReader reader = FileUtils.getFileReader(file, extension);
-                        if(reader != null){
-                            newTemplate = reader.readTemplate(file);
+                        if(extension.equalsIgnoreCase("ncpf")){
+                            if(RBConfig.allowThizNCPF){
+                                newTemplate = ThizNCPFReader.INSTANCE.readTemplate(file);
+                                if(newTemplate == null){
+                                    fileError = ThizNCPFReader.INSTANCE.error;
+                                }
+                            }else{
+                                fileError = Translate.FEATURE_DISABLED.format("NCPF");
+                            }
+                        }else if(extension.equalsIgnoreCase("json")){
+                            if(RBConfig.allowHellrageJSON){
+                                newTemplate = HellrageJSONReader.INSTANCE.readTemplate(file);
+                                if(newTemplate == null){
+                                    fileError = HellrageJSONReader.INSTANCE.error;
+                                }
+                            }else{
+                                fileError = Translate.FEATURE_DISABLED.format("JSON");
+                            }
                         }else{
-                            fileError = "Invalid File Format: " + extension;
+                            fileError = Translate.FILE_INVALID_EXTENSION + ": " + extension;
                         }
                     }else{
-                        fileError = "Missing File Extension";
+                        fileError = Translate.FILE_MISSING_EXTENSION.t();
                     }
                 }
             }else{
-                fileError = "No File Copied";
+                fileError = Translate.FILE_NO_FILE.t();
             }
         }
         catch (Exception ignored) {
-            fileError = "File Error!";
+            fileError = Translate.FILE_ERROR.t();
         }
 
         if(newTemplate != null){
-            builder.importedTemplate = newTemplate;
-            PacketHandler.INSTANCE.sendToServer(new PacketTileSync(builder, EnumSyncPacket.UPLOAD_TEMPLATE));
+            newTemplate.templateID = newTemplate.fileName.hashCode(); //allows the server to receive to files simultaneously from different clients - this id won't ever be saved
+            TemplateManager.getDownloadHandler(true).sendLocalTemplate(newTemplate, null, builder);
             fileError = "";
         }
     }
@@ -264,27 +284,27 @@ public class ReactorBuilderGui extends GuiContainer {
         if(!fileError.isEmpty())
             return TextFormatting.RED + fileError;
         if(builder.template == null)
-            return "No Template";
+            return Translate.FILE_NO_TEMPLATE.t();
         if(!builder.error.isEmpty())
             return TextFormatting.RED + builder.error;
         if(builder.isBuilding)
             return TextFormatting.GREEN + String.format("%s %s/%s", builder.getPassName(), builder.getPassProgress(), builder.getPassTotal());
         if(builder.isDestroying)
-            return TextFormatting.GREEN + String.format("%s %s/%s", "Removing Components", builder.getProgress(), builder.getTotalProgress());
+            return TextFormatting.GREEN + String.format("%s %s/%s", Translate.PASS_REMOVING_COMPONENTS.t(), builder.getProgress(), builder.getTotalProgress());
         if(builder.getProgress() == builder.getTotalProgress())
-            return "Finished";
-        return "Idle";
+            return Translate.STATUS_FINISHED.t();
+        return Translate.STATUS_IDLE.t();
     }
 
     public String getBuilderTotalProgress(){
         int totalProgress = builder.getTotalProgress();
         int percentage = totalProgress != 0 ? builder.getProgress() * 100 / totalProgress : 0;
-        return (builder.isDestroying ? "Destroying: " : "Building: ") + percentage + " %";
+        return (builder.isDestroying ? Translate.STATUS_DESTROYING.t() : Translate.STATUS_BUILDING.t()) + ": " + percentage + " %";
     }
 
     private String getBuilderEnergyText() {
         if(!builder.shouldUseEnergy()){
-            return "Infinite RF";
+            return Translate.ENERGY_INFINITE.t() + " RF";
         }
         return String.format("%s RF", builder.energyStorage.getEnergyStored());
     }

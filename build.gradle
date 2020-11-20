@@ -12,7 +12,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "1.0.0"
+version = "${mod_version}"
 group = "sonar.reactorbuilder"
 archivesBaseName = "reactorbuilder"
 
@@ -52,6 +52,7 @@ reobf {
 
 dependencies {
     compileOnly "nuclearcraft-overhauled:NuclearCraft:${nuclearcraft_version}:${mc_version}"
+    runtimeOnly "nuclearcraft-overhauled:NuclearCraft:${nuclearcraft_version}:${mc_version}"
 }
 
 processResources {

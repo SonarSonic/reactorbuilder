@@ -1,5 +1,9 @@
 package sonar.reactorbuilder.util;
 
+import net.minecraft.util.text.translation.I18n;
+
+import java.io.File;
+
 public class Util {
 
     public static byte[] getByteArrayFromBooleanArray(boolean[] array, int size){
@@ -16,6 +20,19 @@ public class Util {
             bools[i] = array[i] != 0;
         }
         return bools;
+    }
+
+    public static String getFileExtension(File file){
+        String extension = "";
+        int i = file.getName().lastIndexOf('.');
+        if (i >= 0) {
+            extension = file.getName().substring(i+1);
+        }
+        return extension;
+    }
+
+    public static String translate(String s){
+        return I18n.translateToLocal(s);
     }
 
 }

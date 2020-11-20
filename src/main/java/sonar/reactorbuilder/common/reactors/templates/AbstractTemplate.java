@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractTemplate {
 
     ////saved info
+    public int templateID;
     public String fileName;
     public int xSize, ySize, zSize;
     public DictionaryEntry[][][] blocks;
@@ -253,6 +254,9 @@ public abstract class AbstractTemplate {
         return new BlockPos(xPos, yPos, zPos);
     }
 
+    public int getIndexSize(){
+        return xSize * ySize * zSize;
+    }
 
     //// SAVING & LOADING \\\\
 
@@ -263,7 +267,7 @@ public abstract class AbstractTemplate {
             TemplateType type = TemplateType.values()[templateTag.getByte("type")];
             if(type.overhaul == ReactorBuilder.isOverhaul()){
                 AbstractTemplate template = type.creator.create();
-                template.readFromNBT(templateTag);
+                template.readFromNBT(templateTag, true);
                 template.updateAdditionalInfo();
                 template.sortAdditionalInfo();
                 return template;
@@ -277,19 +281,25 @@ public abstract class AbstractTemplate {
         if(template != null){
             NBTTagCompound templateTag = new NBTTagCompound();
             templateTag.setByte("type", (byte)template.getTemplateType().ordinal());
-            template.writeToNBT(templateTag);
+            template.writeToNBT(templateTag, true);
             compound.setTag("template", templateTag);
         }
     }
 
-    public void readFromNBT(NBTTagCompound compound) {
+    public void readFromNBT(NBTTagCompound compound, boolean array) {
         ///general data
+        templateID = compound.getInteger("templateID");
         fileName = compound.getString("fileName");
         xSize = compound.getInteger("xSize");
         ySize = compound.getInteger("ySize");
         zSize = compound.getInteger("zSize");
-        blocks = new DictionaryEntry[xSize][ySize][zSize];
         caseConfig = Util.getBooleanArrayFromByteArray(compound.getByteArray("caseConfig"), 7);
+
+        if(!array){
+            return;
+        }
+
+        blocks = new DictionaryEntry[xSize][ySize][zSize];
 
         ///reference list
         Map<Integer, DictionaryEntry> refs = new HashMap<>();
@@ -315,13 +325,18 @@ public abstract class AbstractTemplate {
     }
 
 
-    public void writeToNBT(NBTTagCompound compound) {
+    public void writeToNBT(NBTTagCompound compound, boolean array) {
         ///general data
+        compound.setInteger("templateID", templateID);
         compound.setString("fileName", fileName);
         compound.setInteger("xSize", xSize);
         compound.setInteger("ySize", ySize);
         compound.setInteger("zSize", zSize);
         compound.setByteArray("caseConfig", Util.getByteArrayFromBooleanArray(caseConfig, 7));
+
+        if(!array){
+            return;
+        }
 
         ///reference list
         if(required.isEmpty()){
@@ -358,12 +373,13 @@ public abstract class AbstractTemplate {
 
     //// BUF - SAVE + LOAD \\\\
 
+    /*
     @Nullable
     public static AbstractTemplate readTemplateFromByteBuf(ByteBuf buf){
         if(buf.readBoolean()){
             TemplateType type = TemplateType.values()[buf.readByte()];
             AbstractTemplate template = type.creator.create();
-            template.readFromBuf(buf);
+            template.readHeaderFromBuf(buf);
             template.updateAdditionalInfo();
             template.sortAdditionalInfo();
             return template;
@@ -376,51 +392,78 @@ public abstract class AbstractTemplate {
         buf.writeBoolean(template != null);
         if(template != null){
             buf.writeByte((byte)template.getTemplateType().ordinal());
-            template.writeToBuf(buf);
+            template.writeHeaderToBuf(buf);
         }
     }
 
-    public void readFromBuf(ByteBuf buf){
-        fileName = ByteBufUtils.readUTF8String(buf);
-        xSize = buf.readInt();
-        ySize = buf.readInt();
-        zSize = buf.readInt();
+     */
+    @Nullable
+    public static AbstractTemplate readTemplateHeaderFromByteBuf(ByteBuf buf){
+        if(buf.readBoolean()){
+            TemplateType type = TemplateType.values()[buf.readByte()];
+            AbstractTemplate template = type.creator.create();
+            template.readHeaderFromBuf(buf);
+            //template.updateAdditionalInfo();
+            //template.sortAdditionalInfo();
+            return template;
+        }
+        return null;
+    }
 
-        for(int i = 0; i < EnumCasingConfig.values().length; i++){
-            caseConfig[i] = buf.readBoolean();
+    @Nullable
+    public static void writeTemplateHeaderToByteBuf(ByteBuf buf, AbstractTemplate template){
+        buf.writeBoolean(template != null);
+        if(template != null){
+            buf.writeByte((byte)template.getTemplateType().ordinal());
+            template.writeHeaderToBuf(buf);
+        }
+    }
+
+
+    public void readHeaderFromBuf(ByteBuf buf){
+        NBTTagCompound headerTag = ByteBufUtils.readTag(buf);
+        readFromNBT(headerTag, false);
+
+    }
+
+    public void writeHeaderToBuf(ByteBuf buf){
+        NBTTagCompound headerTag = new NBTTagCompound();
+        writeToNBT(headerTag, false);
+        ByteBufUtils.writeTag(buf, headerTag);
+    }
+
+    public void readPayloadFromBuf(ByteBuf buf, int start, int end){
+        if(start == 0){ //first payload packet only
+            blocks = new DictionaryEntry[xSize][ySize][zSize];
         }
 
-        blocks = new DictionaryEntry[xSize][ySize][zSize];
-
+        int index = 0;
         for(int x = 0; x < xSize; x ++){
             for(int y = 0; y < ySize; y ++){
                 for(int z = 0; z < zSize; z ++){
-                    blocks[x][y][z] = GlobalDictionary.getComponentInfoFromID(buf.readShort());
+                    if(start <= index && index < end){
+                        blocks[x][y][z] = GlobalDictionary.getComponentInfoFromID(buf.readShort());
+                    }
+                    index ++;
                 }
             }
         }
-
-
     }
 
-    public void writeToBuf(ByteBuf buf){
-        ByteBufUtils.writeUTF8String(buf, fileName);
-        buf.writeInt(xSize);
-        buf.writeInt(ySize);
-        buf.writeInt(zSize);
 
-
-        for(int i = 0; i < EnumCasingConfig.values().length; i++){
-            buf.writeBoolean(caseConfig[i]);
-        }
-
+    public void writePayloadToBuf(ByteBuf buf, int start, int end){
+        int index = 0;
         for(int x = 0; x < xSize; x ++){
             for(int y = 0; y < ySize; y ++){
                 for(int z = 0; z < zSize; z ++){
-                    DictionaryEntry componentInfo = blocks[x][y][z];
-                    buf.writeShort(componentInfo == null ? -1 : componentInfo.globalID);
+                    if(start <= index && index < end){
+                        DictionaryEntry componentInfo = blocks[x][y][z];
+                        buf.writeShort(componentInfo == null ? -1 : componentInfo.globalID);
+                    }
+                    index ++;
                 }
             }
         }
     }
+
 }

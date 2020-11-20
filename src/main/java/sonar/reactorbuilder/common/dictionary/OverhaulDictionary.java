@@ -96,13 +96,13 @@ public class OverhaulDictionary {
         //// TURBINE GENERAL \\\\
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_COMPONENT, "coil_connector", NC_MODID, "turbine_coil_connector", 0);
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_COMPONENT, "rotor_bearing", NC_MODID, "turbine_rotor_bearing", 0);
-        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "rotor_shaft", NC_MODID, "turbine_rotor_shaft", 0);
+        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "rotor_shaft", NC_MODID, "turbine_rotor_shaft", 0, true);
 
         //// TURBINE BLADES \\\\
-        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "steel_blade", NC_MODID, "turbine_rotor_blade_steel", 0);
-        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "extreme_blade", NC_MODID, "turbine_rotor_blade_extreme", 0);
-        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "sic_blade", NC_MODID, "turbine_rotor_blade_sic_sic_cmc", 0);
-        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "rotor_stator", NC_MODID, "turbine_rotor_stator", 0);
+        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "steel_blade", NC_MODID, "turbine_rotor_blade_steel", 0, true);
+        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "extreme_blade", NC_MODID, "turbine_rotor_blade_extreme", 0, true);
+        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "sic_blade", NC_MODID, "turbine_rotor_blade_sic_sic_cmc", 0, true);
+        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_TURBINE_BLADE, "rotor_stator", NC_MODID, "turbine_rotor_stator", 0, true);
 
         //// TURBINE COILS \\\\
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_COMPONENT, "magnesium_coil", NC_MODID, "turbine_dynamo_coil", 0);
@@ -113,10 +113,8 @@ public class OverhaulDictionary {
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_COMPONENT, "silver_coil", NC_MODID, "turbine_dynamo_coil", 5);
 
         //// CASINGS \\\\
-
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_CASING_SOLID, "sfr_casing", NC_MODID, "fission_casing", 0);
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_CASING_GLASS, "sfr_glass", NC_MODID, "fission_glass", 0);
-
 
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_CASING_SOLID, "turbine_casing", NC_MODID, "turbine_casing", 0);
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.OVERHAUL_CASING_GLASS, "turbine_glass", NC_MODID, "turbine_glass", 0);

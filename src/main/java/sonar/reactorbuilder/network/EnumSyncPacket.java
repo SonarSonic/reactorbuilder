@@ -9,7 +9,6 @@ public enum EnumSyncPacket {
     SYNC_TEMPLATE(Side.CLIENT),
 
     //// CLIENT TO SERVER \\\\
-    UPLOAD_TEMPLATE(Side.SERVER),
     TOGGLE_BUILDING(Side.SERVER),
     TOGGLE_DESTROYING(Side.SERVER),
     SYNC_CASING_TYPES(Side.SERVER);

@@ -13,7 +13,9 @@ import sonar.reactorbuilder.client.renderer.TemplateRenderer;
 import sonar.reactorbuilder.network.EnumSyncPacket;
 import sonar.reactorbuilder.network.PacketHandler;
 import sonar.reactorbuilder.network.PacketTileSync;
+import sonar.reactorbuilder.util.Translate;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -47,7 +49,8 @@ public abstract class ReactorBuilderGuiPages extends Gui {
             AbstractTemplate template = gui.builder.template;
 
             int totalY = -10;
-            drawString(gui.getFont(), TextFormatting.BLUE + "Status: " + TextFormatting.RESET + gui.getBuilderStatus(), 4, totalY+=12, -1);
+
+            drawString(gui.getFont(), TextFormatting.BLUE + Translate.STATUS.t() + ": " + TextFormatting.RESET + gui.getBuilderStatus(), 4, totalY+=12, -1);
 
             if(template != null){
                 Map<String, String> stats = new LinkedHashMap<>();
@@ -60,6 +63,15 @@ public abstract class ReactorBuilderGuiPages extends Gui {
                         totalY+=5;
                     }
                 }
+                drawString(gui.getFont(), TextFormatting.BLUE + "Build Pass" + ": " + TextFormatting.RESET + (gui.builder.buildPass+1) + "/"+ template.getBuildPasses(), 4, totalY+=12, -1);
+            }
+            if(gui.builder.isBuilding){
+                int seconds = (int)((gui.builder.getTotalProgress() - gui.builder.getProgress())/gui.builder.getBlocksPerTick())/20;
+                int secondsLeft = seconds % 3600 % 60;
+                int minutes = (int) Math.floor(seconds % 3600 / 60);
+                int hours = (int) Math.floor(seconds / 3600);
+                String timeString = (hours != 0 ? hours +  " h " : "") + (minutes != 0 ? minutes +  " m " : "") + (secondsLeft != 0 ? secondsLeft +  " s " : "");
+                drawString(gui.getFont(), TextFormatting.BLUE + "Time Remaining" + ": " + TextFormatting.RESET + timeString, 4, totalY+=12, -1);
             }
 
         }
@@ -157,9 +169,9 @@ public abstract class ReactorBuilderGuiPages extends Gui {
 
                 ///component highlighting
                 GlStateManager.scale(0.75, 0.75, 0.75);
-                drawString(gui.getFont(), TextFormatting.BLUE + "Casing Config: ", 4, 4, -1);
+                drawString(gui.getFont(), TextFormatting.BLUE + Translate.CASING_CONFIG.t() + ": ", 4, 4, -1);
                 int totalY = 44;
-                drawString(gui.getFont(), TextFormatting.BLUE + "Required Components: ", 4, totalY+=14, -1);
+                drawString(gui.getFont(), TextFormatting.BLUE + Translate.REQUIRED_COMPONENTS.t() + ": ", 4, totalY+=14, -1);
                 totalY+=12;
                 for(Map.Entry<DictionaryEntry, Integer> required : gui.builder.template.required.entrySet()){
                     boolean highlighted = gui.builder.template.highlights.contains(required.getKey().globalID);

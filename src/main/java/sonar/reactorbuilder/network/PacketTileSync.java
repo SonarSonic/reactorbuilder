@@ -31,7 +31,6 @@ public class PacketTileSync implements IMessage {
         builder = BlockPos.fromLong(buf.readLong());
         type = EnumSyncPacket.values()[buf.readInt()];
         byteBuf = buf.retain();
-
     }
 
     public PacketTileSync() {}

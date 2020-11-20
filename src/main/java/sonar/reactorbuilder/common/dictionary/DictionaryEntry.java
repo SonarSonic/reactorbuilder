@@ -2,10 +2,14 @@ package sonar.reactorbuilder.common.dictionary;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidBlock;
 import sonar.reactorbuilder.ReactorBuilder;
 
 import javax.annotation.Nullable;
@@ -16,6 +20,7 @@ public abstract class DictionaryEntry {
     public int globalID;
     public String globalName;
     public DictionaryEntryType entryType;
+    public boolean ignoreMeta = false;
 
     public DictionaryEntry(int id, String globalName, DictionaryEntryType entryType) {
         this.globalID = id;
@@ -35,6 +40,19 @@ public abstract class DictionaryEntry {
 
     public FluidStack getFluidStack(){
         return ((DictionaryEntry.FluidEntry)this).getDefaultFluidStack();
+    }
+
+
+    public boolean canPlaceComponentAtPos(World world, BlockPos pos){
+        return false;
+    }
+
+    public boolean isMatchingComponentAtPos(World world, BlockPos pos){
+        return false;
+    }
+
+    public void ignoreMeta(){
+        ignoreMeta = true;
     }
 
     @Override
@@ -113,6 +131,20 @@ public abstract class DictionaryEntry {
             }
 
             return block.getStateFromMeta(metadata);
+        }
+
+        public boolean isMatchingComponentAtPos(World world, BlockPos pos){
+            IBlockState state = world.getBlockState(pos);
+            IBlockState place = getBlockState();
+            if(place != null && state.getBlock() == place.getBlock() && (ignoreMeta || state.getBlock().getMetaFromState(state) == place.getBlock().getMetaFromState(place))){
+                return true;
+            }
+            return false;
+        }
+
+        public boolean canPlaceComponentAtPos(World world, BlockPos pos){
+            Block block = world.getBlockState(pos).getBlock();
+            return world.isAirBlock(pos) || block.isReplaceable(world, pos) || block instanceof BlockLiquid || block instanceof IFluidBlock;
         }
 
         @Override

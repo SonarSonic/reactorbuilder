@@ -22,34 +22,31 @@ public class ThizNCPFReader extends AbstractFileReader {
 
     public static final ThizNCPFReader INSTANCE = new ThizNCPFReader();
 
-    @Override
-    public boolean canReadFile(File file, String extension) {
-        if(!extension.equalsIgnoreCase("ncpf")){
-            return false;
-        }
-        InputStream in;
-        try{
-            in = Files.newInputStream(file.toPath());
-            Config header = Config.newConfig();
-            header.load(in);
-            int version = header.getByte("version");
-            return version > 7;
-        }catch (Exception e){
-            ReactorBuilder.logger.error("Error reading reactor file" + file.toPath(), e);
-        }
-        return false;
-    }
+    public String error = "";
 
     @Nullable
     @Override
     public AbstractTemplate readTemplate(File file) {
+        error = "";
+
         InputStream in;
         AbstractTemplate template = null;
         try{
             in = Files.newInputStream(file.toPath());
             Config header = Config.newConfig();
             header.load(in);
+
+            int version = header.getByte("version");
+            if(version < 7){
+                error = String.format("Old NCPF version %s", version-1);
+                return null;
+            }
+
             int count = header.get("count");
+            if(count <= 0){
+                error = "NCPF doesn't contain any multiblocks";
+                return null;
+            }
 
             Config config = Config.newConfig();
             config.load(in);
@@ -74,6 +71,8 @@ public class ThizNCPFReader extends AbstractFileReader {
             Map<Integer, DictionaryEntry> overhaulTurbineBladesMap = buildConfigDictionaryMap(overhaulTurbineConfig.getConfigList("blades"));
             Map<Integer, DictionaryEntry> overhaulTurbineCoilsMap = buildConfigDictionaryMap(overhaulTurbineConfig.getConfigList("coils"));
 
+            boolean invalidVersion = false;
+
             for(int i = 0; i < count; i++){
                 Config data = Config.newConfig();
                 data.load(in);
@@ -82,6 +81,7 @@ public class ThizNCPFReader extends AbstractFileReader {
                 switch(id){
                     case 0:
                         if(ReactorBuilder.isOverhaul()){
+                            invalidVersion = true;
                             break;
                         }
                         ConfigNumberList size = data.get("size");
@@ -94,6 +94,7 @@ public class ThizNCPFReader extends AbstractFileReader {
                         break;
                     case 1:
                         if(!ReactorBuilder.isOverhaul()){
+                            invalidVersion = true;
                             break;
                         }
                         size = data.get("size");
@@ -106,6 +107,7 @@ public class ThizNCPFReader extends AbstractFileReader {
                         break;
                     case 2:
                         if(!ReactorBuilder.isOverhaul()){
+                            invalidVersion = true;
                             break;
                         }
                         size = data.get("size");
@@ -118,6 +120,7 @@ public class ThizNCPFReader extends AbstractFileReader {
                         break;
                     case 3:
                         if(!ReactorBuilder.isOverhaul()){
+                            invalidVersion = true;
                             break;
                         }
                         size = data.get("size");
@@ -171,9 +174,18 @@ public class ThizNCPFReader extends AbstractFileReader {
                         break;
                     case 4:
                         ///FUSION REACTOR
+                        error = "Fusion reactors haven't been added to NC yet";
                         break;
                 }
             }
+            if(template == null){
+                if(invalidVersion){
+                    error = "Template for : " + (ReactorBuilder.isOverhaul() ? "Underhaul" : "Overhaul");
+                    return null;
+                }
+            }
+
+
         }catch (Exception e){
             ReactorBuilder.logger.error("Error reading reactor file" + file.toPath(), e);
         }

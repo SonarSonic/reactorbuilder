@@ -8,6 +8,7 @@ import sonar.reactorbuilder.common.dictionary.DictionaryEntry;
 import sonar.reactorbuilder.common.dictionary.DictionaryEntryType;
 import sonar.reactorbuilder.common.dictionary.GlobalDictionary;
 import sonar.reactorbuilder.common.reactors.TemplateType;
+import sonar.reactorbuilder.util.Translate;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class UnderhaulSFRTemplate extends AbstractTemplate {
 
     @Override
     public String[] getBuildPassNames() {
-        return new String[]{"Placing Components", "Placing Casings", "Placing Edges"};
+        return new String[]{Translate.PASS_PLACING_COMPONENTS.t(), Translate.PASS_PLACING_CASINGS.t(), Translate.PASS_PLACING_EDGES.t()};
     }
 
     @Override
@@ -115,38 +116,38 @@ public class UnderhaulSFRTemplate extends AbstractTemplate {
 
     @Override
     public void getStats(Map<String, String> statsMap) {
-        statsMap.put("File Name", fileName);
-        statsMap.put("Reactor Type", getTemplateType().fileType);
-        statsMap.put("Dimensions", xSize + " x " + ySize + " x "  + zSize);
+        statsMap.put(Translate.TEMPLATE_FILE_NAME.t(), fileName);
+        statsMap.put(Translate.TEMPLATE_REACTOR_TYPE.t(), getTemplateType().fileType);
+        statsMap.put(Translate.TEMPLATE_DIMENSIONS.t(), xSize + " x " + ySize + " x "  + zSize);
 
         if(fuel != null)
-            statsMap.put("Fuel Type", fuel.getItemStack().getDisplayName());
+            statsMap.put(Translate.TEMPLATE_FUEL_TYPE.t(), fuel.getItemStack().getDisplayName());
 
-        statsMap.put("Components", String.valueOf(totalSolidComponents));
-        statsMap.put("Casing", String.valueOf(totalSolidCasing + totalGlassCasing));
-        statsMap.put("Edges", String.valueOf(totalEdges));
+        statsMap.put(Translate.TEMPLATE_COMPONENTS.t(), String.valueOf(totalSolidComponents));
+        statsMap.put(Translate.TEMPLATE_CASING.t(), String.valueOf(totalSolidCasing + totalGlassCasing));
+        statsMap.put(Translate.TEMPLATE_EDGES.t(), String.valueOf(totalEdges));
     }
 
 
     //// SAVING & LOADING \\\\
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound compound, boolean array) {
+        super.readFromNBT(compound, array);
         fuel = DictionaryEntry.readFromNBTSafely(compound.getCompoundTag("fuel"));
         edgeItem = new ItemStack(compound.getCompoundTag("edgeItem"));
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
+    public void writeToNBT(NBTTagCompound compound, boolean array) {
+        super.writeToNBT(compound, array);
         compound.setTag("fuel", DictionaryEntry.writeToNBTSafely(new NBTTagCompound(), fuel));
         compound.setTag("edgeItem", edgeItem.writeToNBT(new NBTTagCompound()));
     }
 
     @Override
-    public void readFromBuf(ByteBuf buf){
-        super.readFromBuf(buf);
+    public void readHeaderFromBuf(ByteBuf buf){
+        super.readHeaderFromBuf(buf);
         if(buf.readBoolean()){
             fuel = GlobalDictionary.getComponentInfoFromID(buf.readInt());
         }
@@ -154,8 +155,8 @@ public class UnderhaulSFRTemplate extends AbstractTemplate {
     }
 
     @Override
-    public void writeToBuf(ByteBuf buf){
-        super.writeToBuf(buf);
+    public void writeHeaderToBuf(ByteBuf buf){
+        super.writeHeaderToBuf(buf);
         buf.writeBoolean(fuel != null);
         if(fuel != null){
             buf.writeInt(fuel.globalID);

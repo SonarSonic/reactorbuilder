@@ -11,7 +11,9 @@ import sonar.reactorbuilder.common.dictionary.DictionaryEntry;
 import sonar.reactorbuilder.common.dictionary.DictionaryEntryType;
 import sonar.reactorbuilder.common.dictionary.GlobalDictionary;
 import sonar.reactorbuilder.common.reactors.TemplateType;
+import sonar.reactorbuilder.registry.RBConfig;
 import sonar.reactorbuilder.util.OverhaulHelper;
+import sonar.reactorbuilder.util.Translate;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -66,7 +68,7 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
 
     @Override
     public String[] getBuildPassNames() {
-        return new String[]{"Placing Components", "Setting Filters", "Placing Casings"};
+        return new String[]{Translate.PASS_PLACING_COMPONENTS.t(), Translate.PASS_SETTING_FILTERS.t(), Translate.PASS_PLACING_CASINGS.t()};
     }
 
     @Override
@@ -130,10 +132,13 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
                         if(info == null || !builder.isMatchingComponentAtPos(info, nextPos)){
                             continue;
                         }
-                        if(info.globalName.equals("fuel_cell") || info.globalName.equals("neutron_irradiator")){
+                        if(RBConfig.allowFuelCellFiltering && info.globalName.equals("fuel_cell")){
                             TileEntity tile = builder.getWorld().getTileEntity(nextPos);
                             OverhaulHelper.setItemStackFilter(tile, input.getItemStack());
-                        }else if(info.globalName.equals("fuel_vessel")){
+                        }else if(RBConfig.allowIrradiatorFiltering && info.globalName.equals("neutron_irradiator")){
+                            TileEntity tile = builder.getWorld().getTileEntity(nextPos);
+                            OverhaulHelper.setItemStackFilter(tile, input.getItemStack());
+                        }else if(RBConfig.allowFuelVesselFiltering && info.globalName.equals("fuel_vessel")){
                             TileEntity tile = builder.getWorld().getTileEntity(nextPos);
                             OverhaulHelper.setFluidStackFilter(tile, input.getFluidStack());
                         }
@@ -184,15 +189,15 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
 
     @Override
     public void getStats(Map<String, String> statsMap) {
-        statsMap.put("File Name", fileName);
-        statsMap.put("Reactor Type", getTemplateType().fileType);
-        statsMap.put("Dimensions", xSize + " x " + ySize + " x "  + zSize);
+        statsMap.put(Translate.TEMPLATE_FILE_NAME.t(), fileName);
+        statsMap.put(Translate.TEMPLATE_REACTOR_TYPE.t(), getTemplateType().fileType);
+        statsMap.put(Translate.TEMPLATE_DIMENSIONS.t(), xSize + " x " + ySize + " x "  + zSize);
 
-        statsMap.put("Fuels", fuelNameList);
-        statsMap.put("Irradiator Filters", recipeNameList);
+        statsMap.put(Translate.TEMPLATE_FUEL_TYPES.t(), fuelNameList);
+        statsMap.put(Translate.TEMPLATE_IRRADIATOR_FILTERS.t(), recipeNameList);
 
-        statsMap.put("Components", String.valueOf(totalSolidComponents));
-        statsMap.put("Casing", String.valueOf(totalSolidCasing + totalGlassCasing + totalEdges));
+        statsMap.put(Translate.TEMPLATE_COMPONENTS.t(), String.valueOf(totalSolidComponents));
+        statsMap.put(Translate.CASING_CONFIG.t(), String.valueOf(totalSolidCasing + totalGlassCasing + totalEdges));
     }
 
 
@@ -200,8 +205,11 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
     //// SAVING & LOADING \\\\
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public void readFromNBT(NBTTagCompound compound, boolean array) {
+        super.readFromNBT(compound, array);
+        if(!array){ //recipe maps can easily become too big for ByteBufs - TODO - WE MUST SEND THIS STUFF!!!
+            return;
+        }
         recipeToIndexMap.clear();
         NBTTagList fuelMapList = compound.getTagList("recipeMap", Constants.NBT.TAG_COMPOUND);
         for(int i = 0; i < fuelMapList.tagCount(); i ++){
@@ -214,8 +222,11 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
     }
 
     @Override
-    public void writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
+    public void writeToNBT(NBTTagCompound compound, boolean array) {
+        super.writeToNBT(compound, array);
+        if(!array){
+            return;
+        }
         NBTTagList fuelMapList = new NBTTagList();
         for(Map.Entry<DictionaryEntry, List<Integer>> entry : recipeToIndexMap.entrySet()){
             NBTTagCompound fuelCompound = new NBTTagCompound();
@@ -225,12 +236,11 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
             fuelMapList.appendTag(fuelCompound);
         }
         compound.setTag("recipeMap", fuelMapList);
-
     }
 
     @Override
-    public void readFromBuf(ByteBuf buf){
-        super.readFromBuf(buf);
+    public void readHeaderFromBuf(ByteBuf buf){
+        super.readHeaderFromBuf(buf);
         recipeToIndexMap.clear();
         int mapSize = buf.readInt();
         for(int f = 0; f < mapSize; f++){
@@ -245,8 +255,8 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
     }
 
     @Override
-    public void writeToBuf(ByteBuf buf){
-        super.writeToBuf(buf);
+    public void writeHeaderToBuf(ByteBuf buf){
+        super.writeHeaderToBuf(buf);
         buf.writeInt(recipeToIndexMap.size());
         for(Map.Entry<DictionaryEntry, List<Integer>> entry : recipeToIndexMap.entrySet()){
             buf.writeShort(entry.getKey().globalID);
@@ -256,8 +266,6 @@ public abstract class OverhaulFissionTemplate extends AbstractTemplate {
             }
         }
     }
-
-
 
     public static class SFR extends OverhaulFissionTemplate{
 

@@ -8,8 +8,10 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -21,6 +23,11 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import sonar.reactorbuilder.ReactorBuilder;
+import sonar.reactorbuilder.network.EnumSyncPacket;
+import sonar.reactorbuilder.network.PacketHandler;
+import sonar.reactorbuilder.network.PacketTileSync;
+import sonar.reactorbuilder.network.templates.TemplateManager;
+import sonar.reactorbuilder.network.templates.TemplateServerData;
 
 public class ReactorBuilderBlock extends Block implements ITileEntityProvider {
 
@@ -53,6 +60,10 @@ public class ReactorBuilderBlock extends Block implements ITileEntityProvider {
         if (!(te instanceof ReactorBuilderTileEntity)) {
             return false;
         }
+        ReactorBuilderTileEntity builder = (ReactorBuilderTileEntity) te;
+        if(builder.template != null){
+            PacketHandler.INSTANCE.sendTo(new PacketTileSync(builder, EnumSyncPacket.SYNC_TEMPLATE), (EntityPlayerMP) player);
+        }
         player.openGui(ReactorBuilder.instance, GUI_ID, world, pos.getX(), pos.getY(), pos.getZ());
         return true;
     }
@@ -62,6 +73,15 @@ public class ReactorBuilderBlock extends Block implements ITileEntityProvider {
         return true;
     }
 
+    @Override
+    public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        TileEntity tile = world.getTileEntity(pos);
+        if(tile instanceof ReactorBuilderTileEntity){
+            ReactorBuilderTileEntity builder = (ReactorBuilderTileEntity) tile;
+            builder.removeTemplateData();
+        }
+        super.breakBlock(world, pos, state);
+    }
 
     //// BLOCK STATES \\\\
 
