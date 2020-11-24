@@ -13,6 +13,12 @@ public class PacketTemplateRequest implements IMessage {
 
     public int templateID;
 
+    public PacketTemplateRequest() {}
+
+    public PacketTemplateRequest(int templateID) {
+        this.templateID = templateID;
+    }
+
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(templateID);
@@ -21,12 +27,6 @@ public class PacketTemplateRequest implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         templateID = buf.readInt();
-    }
-
-    public PacketTemplateRequest() {}
-
-    public PacketTemplateRequest(int templateID) {
-        this.templateID = templateID;
     }
 
     public static class Handler implements IMessageHandler<PacketTemplateRequest, IMessage> {

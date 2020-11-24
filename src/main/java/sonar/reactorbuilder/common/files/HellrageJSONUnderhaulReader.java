@@ -3,13 +3,11 @@ package sonar.reactorbuilder.common.files;
 import com.google.gson.*;
 import net.minecraft.util.JsonUtils;
 import org.apache.commons.io.IOUtils;
-import scala.swing.Reactor;
 import sonar.reactorbuilder.ReactorBuilder;
 import sonar.reactorbuilder.common.dictionary.GlobalDictionary;
 import sonar.reactorbuilder.common.dictionary.DictionaryEntry;
 import sonar.reactorbuilder.common.reactors.templates.AbstractTemplate;
 import sonar.reactorbuilder.common.reactors.templates.UnderhaulSFRTemplate;
-import sonar.reactorbuilder.util.Translate;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -19,19 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class HellrageJSONReader extends AbstractFileReader {
+public class HellrageJSONUnderhaulReader extends AbstractFileReader {
 
-    public static final HellrageJSONReader INSTANCE = new HellrageJSONReader();
+    public static final HellrageJSONUnderhaulReader INSTANCE = new HellrageJSONUnderhaulReader();
 
     public String error = "";
 
     @Nullable
     public AbstractTemplate readTemplate(File file) {
-        if(ReactorBuilder.isOverhaul()){
-            error = "JSON files are UNDERHAUL only";
-            return null;
-        }
-
         error = "";
 
         Path path = file.toPath();

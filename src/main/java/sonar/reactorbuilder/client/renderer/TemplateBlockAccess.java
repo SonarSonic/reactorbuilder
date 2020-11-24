@@ -30,8 +30,8 @@ public class TemplateBlockAccess implements IBlockAccess {
 
     @Override
     public IBlockState getBlockState(BlockPos pos) {
-        if(!template.isComponent(pos.getX(), pos.getY(), pos.getZ())){ // prevents casing disabling component rendering
-            return Blocks.AIR.getDefaultState();
+        if(!template.isComponent(pos.getX(), pos.getY(), pos.getZ())){
+            return Blocks.AIR.getDefaultState(); // prevents casing disabling component rendering
         }
         DictionaryEntry info = template.getComponent(pos.getX(), pos.getY(), pos.getZ());
         return info == null ? Blocks.AIR.getDefaultState() : info.getBlockState();
@@ -39,8 +39,8 @@ public class TemplateBlockAccess implements IBlockAccess {
 
     @Override
     public boolean isAirBlock(BlockPos pos) {
-        if(!template.isComponent(pos.getX(), pos.getY(), pos.getZ())){ // prevents casing disabling component rendering
-            return true;
+        if(!template.isComponent(pos.getX(), pos.getY(), pos.getZ())){
+            return true; // prevents casing disabling component rendering
         }
         DictionaryEntry info = template.getComponent(pos.getX(), pos.getY(), pos.getZ());
         return info == null;

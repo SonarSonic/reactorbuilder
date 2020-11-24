@@ -23,7 +23,6 @@ public class TemplateRenderer {
             buffer.begin(7, DefaultVertexFormats.BLOCK);
             buffer.setVertexState((BufferBuilder.State)template.bufferState3D);
             Tessellator.getInstance().draw();
-
         }else{
             ///render for the first time
             TemplateBlockAccess blockAccess = new TemplateBlockAccess(template);
@@ -56,9 +55,7 @@ public class TemplateRenderer {
             buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
             buffer.setVertexState((BufferBuilder.State)template.bufferState2D);
             Tessellator.getInstance().draw();
-
         }else{
-
             ///render for the first time
             BlockRendererDispatcher renderer = Minecraft.getMinecraft().getBlockRendererDispatcher();
             BufferBuilder buffer = Tessellator.getInstance().getBuffer();

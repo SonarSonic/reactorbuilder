@@ -19,6 +19,14 @@ public class PacketTileSync implements IMessage {
 
     public ByteBuf byteBuf;
 
+    public PacketTileSync() {}
+
+    public PacketTileSync(ReactorBuilderTileEntity tileEntity, EnumSyncPacket type) {
+        this.te = tileEntity;
+        this.builder = tileEntity.getPos();
+        this.type = type;
+    }
+
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeLong(builder.toLong());
@@ -31,14 +39,6 @@ public class PacketTileSync implements IMessage {
         builder = BlockPos.fromLong(buf.readLong());
         type = EnumSyncPacket.values()[buf.readInt()];
         byteBuf = buf.retain();
-    }
-
-    public PacketTileSync() {}
-
-    public PacketTileSync(ReactorBuilderTileEntity tileEntity, EnumSyncPacket type) {
-        this.te = tileEntity;
-        this.builder = tileEntity.getPos();
-        this.type = type;
     }
 
     public static class Handler implements IMessageHandler<PacketTileSync, IMessage> {

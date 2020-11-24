@@ -13,13 +13,13 @@ import org.lwjgl.opengl.GL11;
 import sonar.reactorbuilder.ReactorBuilder;
 import sonar.reactorbuilder.client.gui.GuiIconButton;
 import sonar.reactorbuilder.client.gui.GuiScroller;
-import sonar.reactorbuilder.common.files.HellrageJSONReader;
+import sonar.reactorbuilder.common.files.HellrageJSONOverhaulReader;
+import sonar.reactorbuilder.common.files.HellrageJSONUnderhaulReader;
 import sonar.reactorbuilder.common.files.ThizNCPFReader;
 import sonar.reactorbuilder.common.reactors.templates.AbstractTemplate;
 import sonar.reactorbuilder.network.EnumSyncPacket;
 import sonar.reactorbuilder.network.PacketHandler;
 import sonar.reactorbuilder.network.PacketTileSync;
-import sonar.reactorbuilder.network.templates.DownloadHandler;
 import sonar.reactorbuilder.network.templates.TemplateManager;
 import sonar.reactorbuilder.registry.RBConfig;
 import sonar.reactorbuilder.util.Translate;
@@ -201,9 +201,16 @@ public class ReactorBuilderGui extends GuiContainer {
                             }
                         }else if(extension.equalsIgnoreCase("json")){
                             if(RBConfig.allowHellrageJSON){
-                                newTemplate = HellrageJSONReader.INSTANCE.readTemplate(file);
-                                if(newTemplate == null){
-                                    fileError = HellrageJSONReader.INSTANCE.error;
+                                if(ReactorBuilder.isOverhaul()){
+                                    newTemplate = HellrageJSONOverhaulReader.INSTANCE.readTemplate(file);
+                                    if(newTemplate == null){
+                                        fileError = HellrageJSONOverhaulReader.INSTANCE.error;
+                                    }
+                                }else{
+                                    newTemplate = HellrageJSONUnderhaulReader.INSTANCE.readTemplate(file);
+                                    if(newTemplate == null){
+                                        fileError = HellrageJSONUnderhaulReader.INSTANCE.error;
+                                    }
                                 }
                             }else{
                                 fileError = Translate.FEATURE_DISABLED.format("JSON");
@@ -221,6 +228,7 @@ public class ReactorBuilderGui extends GuiContainer {
         }
         catch (Exception ignored) {
             fileError = Translate.FILE_ERROR.t();
+            ReactorBuilder.logger.error("Error reading reactor file", ignored);
         }
 
         if(newTemplate != null){

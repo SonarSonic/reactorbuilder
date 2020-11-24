@@ -19,6 +19,14 @@ public class PacketTemplateUploadPayload implements IMessage {
     public int end;
     public ByteBuf byteBuf;
 
+    public PacketTemplateUploadPayload() {}
+
+    public PacketTemplateUploadPayload(AbstractTemplate template, int start, int end) {
+        this.template = template;
+        this.start = start;
+        this.end = end;
+    }
+
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(template.templateID);
@@ -33,14 +41,6 @@ public class PacketTemplateUploadPayload implements IMessage {
         start = buf.readInt();
         end = buf.readInt();
         byteBuf = buf.retain();
-    }
-
-    public PacketTemplateUploadPayload() {}
-
-    public PacketTemplateUploadPayload(AbstractTemplate template, int start, int end) {
-        this.template = template;
-        this.start = start;
-        this.end = end;
     }
 
     public static class Handler implements IMessageHandler<PacketTemplateUploadPayload, IMessage> {

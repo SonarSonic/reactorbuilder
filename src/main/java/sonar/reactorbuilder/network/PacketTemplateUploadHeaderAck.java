@@ -14,6 +14,12 @@ public class PacketTemplateUploadHeaderAck implements IMessage {
 
     public int templateID;
 
+    public PacketTemplateUploadHeaderAck() {}
+
+    public PacketTemplateUploadHeaderAck(int templateID) {
+        this.templateID = templateID;
+    }
+
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(templateID);
@@ -22,12 +28,6 @@ public class PacketTemplateUploadHeaderAck implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         templateID = buf.readInt();
-    }
-
-    public PacketTemplateUploadHeaderAck() {}
-
-    public PacketTemplateUploadHeaderAck(int templateID) {
-        this.templateID = templateID;
     }
 
     public static class Handler implements IMessageHandler<PacketTemplateUploadHeaderAck, IMessage> {

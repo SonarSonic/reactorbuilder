@@ -17,6 +17,8 @@ public class PacketSyncDictionary implements IMessage {
 
     public  Map<String, Integer> componentIds;
 
+    public PacketSyncDictionary() {}
+
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(GlobalDictionary.GLOBAL_DICTIONARY.size());
@@ -36,8 +38,6 @@ public class PacketSyncDictionary implements IMessage {
             componentIds.put(refString, globalID);
         }
     }
-
-    public PacketSyncDictionary() {}
 
     public static class Handler implements IMessageHandler<PacketSyncDictionary, IMessage> {
         @Override

@@ -268,7 +268,7 @@ public abstract class ReactorBuilderGuiPages extends Gui {
 
         @Override
         public int getPageSize(ReactorBuilderGui gui) {
-            return 75 + gui.builder.template.ySize*75;
+            return 75 + (gui.builder.template == null ?  0 : gui.builder.template.ySize*75);
         }
     }
 

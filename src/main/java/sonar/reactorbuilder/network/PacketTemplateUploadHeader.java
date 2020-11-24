@@ -20,6 +20,13 @@ public class PacketTemplateUploadHeader implements IMessage {
     public AbstractTemplate template;
     public BlockPos dest;
 
+    public PacketTemplateUploadHeader() {}
+
+    public PacketTemplateUploadHeader(AbstractTemplate template, @Nullable BlockPos dest) {
+        this.template = template;
+        this.dest = dest;
+    }
+
     @Override
     public void toBytes(ByteBuf buf) {
         AbstractTemplate.writeTemplateHeaderToByteBuf(buf, template);
@@ -35,13 +42,6 @@ public class PacketTemplateUploadHeader implements IMessage {
         if(buf.readBoolean()){
             dest = BlockPos.fromLong(buf.readLong());
         }
-    }
-
-    public PacketTemplateUploadHeader() {}
-
-    public PacketTemplateUploadHeader(AbstractTemplate template, @Nullable BlockPos dest) {
-        this.template = template;
-        this.dest = dest;
     }
 
     public static class Handler implements IMessageHandler<PacketTemplateUploadHeader, IMessage> {
