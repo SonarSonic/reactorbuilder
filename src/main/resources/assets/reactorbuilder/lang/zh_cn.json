@@ -1,53 +1,53 @@
-tile.reactorbuilder.reactorbuilder.name=Reactor Builder
-tile.reactorbuilder.creativereactorbuilder.name=Creative Reactor Builder
-itemGroup.reactorbuilder.tab=NuclearCraft Reactor Builder
+tile.reactorbuilder.reactorbuilder.name=反应堆建造机
+tile.reactorbuilder.creativereactorbuilder.name=创造模式反应堆建造机
+itemGroup.reactorbuilder.tab=核电工艺反应堆建造机
 
 //gui buttons
-info.reactorbuilder.paste_file=Paste file
-info.reactorbuilder.build_reactor=Build reactor
-info.reactorbuilder.destroy_reactor=Destroy reactor
-info.reactorbuilder.next_page=Next page
-info.reactorbuilder.prev_page=Previous page
+info.reactorbuilder.paste_file=粘贴文件
+info.reactorbuilder.build_reactor=建造反应堆
+info.reactorbuilder.destroy_reactor=拆除反应堆
+info.reactorbuilder.next_page=下一页
+info.reactorbuilder.prev_page=上一页
 
 //builder status
-info.reactorbuilder.status=Status
-info.reactorbuilder.status.idle=Idle
-info.reactorbuilder.status.finished=Finished
-info.reactorbuilder.status.building=Building
-info.reactorbuilder.status.destroying=Destroying
+info.reactorbuilder.status=状态
+info.reactorbuilder.status.idle=空闲
+info.reactorbuilder.status.finished=完成
+info.reactorbuilder.status.building=建造中
+info.reactorbuilder.status.destroying=拆除中
 
 //stats
-info.reactorbuilder.template.file_name=File Name
-info.reactorbuilder.template.reactor_type=Reactor Type
-info.reactorbuilder.template.dimensions=Dimensions
-info.reactorbuilder.template.fuel_type=Fuel Type
-info.reactorbuilder.template.fuel_types=Fuel Types
-info.reactorbuilder.template.irradiator_filters=Irradiator Filters
-info.reactorbuilder.template.components=Components
-info.reactorbuilder.template.casing=Casing
-info.reactorbuilder.template.edges=Edges
+info.reactorbuilder.template.file_name=文件名
+info.reactorbuilder.template.reactor_type=反应堆类型
+info.reactorbuilder.template.dimensions=大小
+info.reactorbuilder.template.fuel_type=燃料种类
+info.reactorbuilder.template.fuel_types=燃料种类
+info.reactorbuilder.template.irradiator_filters=辐照器过滤器
+info.reactorbuilder.template.components=材料
+info.reactorbuilder.template.casing=外壳
+info.reactorbuilder.template.edges=边缘
 
 //config
-info.reactorbuilder.general.casing_config=Casing config
-info.reactorbuilder.general.required_components=Required components
-info.reactorbuilder.general.disabled_feature=%s is disabled - see config
+info.reactorbuilder.general.casing_config=外壳配置
+info.reactorbuilder.general.required_components=所需材料
+info.reactorbuilder.general.disabled_feature=%s 被禁用了：请见配置项
 
 //builder passes
-info.reactorbuilder.pass.removing_components=Removing Components
-info.reactorbuilder.pass.placing_components=Placing Components
-info.reactorbuilder.pass.placing_casings=Placing Casings
-info.reactorbuilder.pass.placing_edges=Placing Edges
-info.reactorbuilder.pass.placing_coils=Placing Coils
-info.reactorbuilder.pass.placing_shafts=Placing Shafts
-info.reactorbuilder.pass.placing_blades=Placing Blades
-info.reactorbuilder.pass.setting_filters=Setting Filters
+info.reactorbuilder.pass.removing_components=移除中
+info.reactorbuilder.pass.placing_components=放置中
+info.reactorbuilder.pass.placing_casings=外壳放置中
+info.reactorbuilder.pass.placing_edges=边缘放置中
+info.reactorbuilder.pass.placing_coils=线圈放置中
+info.reactorbuilder.pass.placing_shafts=转子轴放置中
+info.reactorbuilder.pass.placing_blades=叶片放置中
+info.reactorbuilder.pass.setting_filters=过滤器设置中
 
 //file status
-info.reactorbuilder.file.no_template=No template
-info.reactorbuilder.file.error=File Error!
-info.reactorbuilder.file.no_file=No file copied
-info.reactorbuilder.file.missing_extension=Missing file extension
-info.reactorbuilder.file.invalid_extension=Invalid file extension
+info.reactorbuilder.file.no_template=无模板
+info.reactorbuilder.file.error=文件错误
+info.reactorbuilder.file.no_file=未复制文件
+info.reactorbuilder.file.missing_extension=文件扩展遗失
+info.reactorbuilder.file.invalid_extension=文件扩展无效
 
 //energy
-info.reactorbuilder.energy.infinite=Infinite
+info.reactorbuilder.energy.infinite=无限
