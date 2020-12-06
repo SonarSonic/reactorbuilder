@@ -554,6 +554,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
     public AbstractTemplate template = null;
 
     public void initTemplate(){
+        startPos = null;
         template = TemplateManager.getTemplateManager(world.isRemote).getTemplate(templateID);
         if(!world.isRemote && template == null){
             templateID = -1;
@@ -579,7 +580,7 @@ public class ReactorBuilderTileEntity extends TileEntity implements ITickable {
         initTemplate();
     }
 
-    public void removeTemplateData(){ //removes the relevant
+    public void removeTemplateData(){
         if(world.isRemote){
             return;
         }

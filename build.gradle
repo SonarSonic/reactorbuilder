@@ -12,9 +12,9 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-version = "${mod_version}"
+version = "${mc_version}-${mod_version}"
 group = "sonar.reactorbuilder"
-archivesBaseName = "reactorbuilder"
+archivesBaseName = "NC-ReactorBuilder"
 
 sourceCompatibility = targetCompatibility = '1.8'
 compileJava {
