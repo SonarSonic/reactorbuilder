@@ -1,0 +1,53 @@
+tile.reactorbuilder.reactorbuilder.name=Строитель реактора
+tile.reactorbuilder.creativereactorbuilder.name=Творческий строитель реактора
+itemGroup.reactorbuilder.tab=NuclearCraft: Reactor Builder
+
+//gui buttons
+info.reactorbuilder.paste_file=Вставить файл
+info.reactorbuilder.build_reactor=Построить реактор
+info.reactorbuilder.destroy_reactor=Уничтожить реактор
+info.reactorbuilder.next_page=След. стр.
+info.reactorbuilder.prev_page=Пред. стр.
+
+//builder status
+info.reactorbuilder.status=Статус
+info.reactorbuilder.status.idle=Ожидание
+info.reactorbuilder.status.finished=Законченное
+info.reactorbuilder.status.building=Построение
+info.reactorbuilder.status.destroying=Уничтожение
+
+//stats
+info.reactorbuilder.template.file_name=Имя файла
+info.reactorbuilder.template.reactor_type=Тип реактора
+info.reactorbuilder.template.dimensions=Размеры
+info.reactorbuilder.template.fuel_type=Тип топлива
+info.reactorbuilder.template.fuel_types=Типы топлива
+info.reactorbuilder.template.irradiator_filters=Фильтры облучателя
+info.reactorbuilder.template.components=Компоненты
+info.reactorbuilder.template.casing=Корпус
+info.reactorbuilder.template.edges=Грани
+
+//config
+info.reactorbuilder.general.casing_config=Конфигурация корпуса
+info.reactorbuilder.general.required_components=Необходимые компоненты
+info.reactorbuilder.general.disabled_feature=%s отключен - см. конфиг
+
+//builder passes
+info.reactorbuilder.pass.removing_components=Удаление компонентов
+info.reactorbuilder.pass.placing_components=Размещение компонентов
+info.reactorbuilder.pass.placing_casings=Размещение корпусов
+info.reactorbuilder.pass.placing_edges=Размещение граней
+info.reactorbuilder.pass.placing_coils=Размещение катушек
+info.reactorbuilder.pass.placing_shafts=Размещение валов
+info.reactorbuilder.pass.placing_blades=Размещение лезвий
+info.reactorbuilder.pass.setting_filters=Настройка фильтров
+
+//file status
+info.reactorbuilder.file.no_template=Нет шаблона
+info.reactorbuilder.file.error=Ошибка файла!
+info.reactorbuilder.file.no_file=Файл не скопирован
+info.reactorbuilder.file.missing_extension=Отсутствует расширение файла
+info.reactorbuilder.file.invalid_extension=Недопустимое расширение файла
+
+//energy
+info.reactorbuilder.energy.infinite=Бесконечное
