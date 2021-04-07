@@ -8,6 +8,8 @@ public class HellrageJSONDictionary extends AbstractFileDictionary {
         public void buildDictionary() {
             //general
             add("FuelCell", "fuel_cell");
+            add("ReactorCell", "reactor_cell");
+
             add("Graphite", "graphite_moderator");
             add("Beryllium", "beryllium_moderator");
 

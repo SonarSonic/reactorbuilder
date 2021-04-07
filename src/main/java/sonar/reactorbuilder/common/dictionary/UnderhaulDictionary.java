@@ -8,6 +8,7 @@ public class UnderhaulDictionary {
 
         //general
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.UNDERHAUL_COMPONENT,"fuel_cell", NC_MODID, "cell_block",0);
+        GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.UNDERHAUL_COMPONENT,"reactor_cell", NC_MODID, "cell_block",0);
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.UNDERHAUL_COMPONENT,"graphite_moderator", NC_MODID, "ingot_block",8); //TODO SUPPORT FOR OTHER MODS ORE DICTIONARY.
         GlobalDictionary.addDictionaryItemEntry(DictionaryEntryType.UNDERHAUL_COMPONENT,"beryllium_moderator", NC_MODID,"ingot_block",9);
 
