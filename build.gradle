@@ -1,30 +1,48 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
-        maven { url = "https://files.minecraftforge.net/maven" }
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'net.minecraftforge.gradle'
+// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
+apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
 version = "${mc_version}-${mod_version}"
 group = "sonar.reactorbuilder"
 archivesBaseName = "NC-ReactorBuilder"
 
-sourceCompatibility = targetCompatibility = '1.8'
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    version = "1.12.2-14.23.5.2847"
-    runDir = "run"
-    mappings = "snapshot_20171003"
+    mappings channel: 'snapshot', version: '20171003-1.12'
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+        }
+
+        server {
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
 }
 
 repositories {
@@ -37,25 +55,14 @@ repositories {
     }
 }
 
-tasks.build.dependsOn shadowJar
-
-shadowJar {
-    classifier = ""
-    dependencies {
-        include(dependency('simplelibrary:SimpleLibraryPlus-1.3'))
-    }
-}
-
-reobf {
-    shadowJar {} // Reobfuscate the shadowed JAR
-}
-
 dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2855'
+
     compileOnly "nuclearcraft-overhauled:NuclearCraft:${nuclearcraft_version}:${mc_version}"
     runtimeOnly "nuclearcraft-overhauled:NuclearCraft:${nuclearcraft_version}:${mc_version}"
 }
 
-processResources {
+/**processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
     from(sourceSets.main.resources.srcDirs) {
@@ -65,4 +72,4 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
-}
+}*/
